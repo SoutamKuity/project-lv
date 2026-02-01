@@ -125,20 +125,22 @@ app.get("/api/session/:sessionId/result", async (req, res) => {
 
   const a1 = session.partner1.answers;
   const a2 = session.partner2.answers;
-  const TOTAL_QUESTIONS = a1.length; // or fixed number
+  const TOTAL_QUESTIONS = a1.length;
 
   // ❌ Do not calculate until BOTH finish
   if (a1.length !== a2.length || a1.length === 0) {
     return res.json({ ready: false });
   }
 
-  // ✅ If already calculated, return SAME score
+  // ✅ If already calculated, return SAME score + answers
   if (session.score !== null) {
     return res.json({
       ready: true,
       score: session.score,
       partner1: session.partner1.name,
       partner2: session.partner2.name,
+      partner1Answers: a1,
+      partner2Answers: a2,
     });
   }
 
@@ -149,15 +151,17 @@ app.get("/api/session/:sessionId/result", async (req, res) => {
   session.score = score;
   session.status = "completed";
   await session.save();
-  // console.log(`Calculated score for session ${sessionId}: ${score}%`);
 
   return res.json({
     ready: true,
     score,
     partner1: session.partner1.name,
     partner2: session.partner2.name,
+    partner1Answers: a1,
+    partner2Answers: a2,
   });
 });
+
 
 
 /* ------------------ SERVER ------------------ */

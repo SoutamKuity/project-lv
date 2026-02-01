@@ -8,7 +8,7 @@ import QuestionCard from "@/components/QuestionCard";
 import CompatibilityResult from "@/components/CompatibilityResult";
 import { loveQuestions } from "@/data/questions";
 import axios from "axios";
-const url="http://localhost:5000/api"
+const url = "http://localhost:5000/api"
 
 type GameState = "landing" | "qr-display" | "name-input" | "questions" | "waiting" | "results";
 
@@ -31,7 +31,7 @@ const calculateCompatibility = (answers1: string[], answers2: string[]): number 
 };
 
 const Index = () => {
-    const [gameState, setGameState] = useState<GameState>("landing");
+  const [gameState, setGameState] = useState<GameState>("landing");
   const [sessionId, setSessionId] = useState("");
   const [scannedCount, setScannedCount] = useState(0);
   const [currentPartner, setCurrentPartner] = useState<1 | 2>(1);
@@ -94,23 +94,23 @@ const Index = () => {
   };
 
   useEffect(() => {
-  if (gameState !== "qr-display") return;
+    if (gameState !== "qr-display") return;
 
-  const interval = setInterval(async () => {
-    try {
-      const res = await axios.get(`${url}/session/${sessionId}/getpartners`);
+    const interval = setInterval(async () => {
+      try {
+        const res = await axios.get(`${url}/session/${sessionId}/getpartners`);
 
-      if (res.data.scannedCount >= 2) {
-        setScannedCount(2);
-        clearInterval(interval);
+        if (res.data.scannedCount >= 2) {
+          setScannedCount(2);
+          clearInterval(interval);
+        }
+      } catch (err) {
+        console.error("QR polling failed");
       }
-    } catch (err) {
-      console.error("QR polling failed");
-    }
-  }, 2000);
+    }, 2000);
 
-  return () => clearInterval(interval);
-}, [gameState, sessionId]);
+    return () => clearInterval(interval);
+  }, [gameState, sessionId]);
 
   /* ---------------- SAVE NAME ---------------- */
   const handleNameSubmit = async (name: string) => {
@@ -175,27 +175,33 @@ const Index = () => {
 
         if (res.data.ready) {
           console.log("Result ready:", res.data);
+
           setCompatibilityScore(res.data.score);
 
+          // ✅ store names
           setPartner1((prev) => ({
             ...prev,
             name: res.data.partner1,
+            answers: res.data.partner1Answers,
           }));
+
           setPartner2((prev) => ({
             ...prev,
             name: res.data.partner2,
+            answers: res.data.partner2Answers,
           }));
 
           setGameState("results");
           clearInterval(interval);
         }
-      } catch {
+      } catch (error) {
         console.error("Error fetching result");
       }
     }, 2000);
 
     return () => clearInterval(interval);
   }, [gameState, sessionId]);
+
 
   /* ---------------- RESET ---------------- */
   const handleNewSession = () => {
@@ -211,7 +217,7 @@ const Index = () => {
   return (
     <div className="min-h-screen gradient-soft relative overflow-hidden">
       <FloatingHearts />
-      
+
       <div className="relative z-10 container mx-auto px-4 py-8 min-h-screen flex flex-col">
         {/* Header */}
         <header className="text-center mb-8">
@@ -238,12 +244,12 @@ const Index = () => {
                     <Sparkles className="w-8 h-8 text-gold absolute -top-2 -right-2" />
                   </div>
                 </div>
-                
+
                 <h2 className="font-display text-3xl md:text-4xl text-foreground mb-4">
                   Test Your Love
                 </h2>
                 <p className="text-muted-foreground mb-8 text-lg">
-                  Generate a QR code, scan it with your partner, answer questions together, 
+                  Generate a QR code, scan it with your partner, answer questions together,
                   and discover how compatible you are this Valentine's Day!
                 </p>
 
@@ -256,7 +262,7 @@ const Index = () => {
                     <QrCode className="w-6 h-6 mr-2" />
                     Generate QR Code
                   </Button>
-                  
+
                   <p className="text-sm text-muted-foreground">
                     Both partners scan the same code to begin
                   </p>
@@ -305,7 +311,7 @@ const Index = () => {
                   Waiting for Your Partner
                 </h2>
                 <p className="text-muted-foreground">
-                  {partner1.name || "Partner"} has finished answering. 
+                  {partner1.name || "Partner"} has finished answering.
                   Please wait while your partner completes their questions...
                 </p>
                 <div className="mt-6 flex justify-center gap-2">
@@ -322,9 +328,12 @@ const Index = () => {
               score={compatibilityScore}
               partner1Name={partner1.name || "Partner 1"}
               partner2Name={partner2.name || "Partner 2"}
+              partner1Answers={partner1.answers}
+              partner2Answers={partner2.answers}
               onNewSession={handleNewSession}
             />
           )}
+
         </main>
 
         {/* Footer */}
