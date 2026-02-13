@@ -9,7 +9,7 @@ import CompatibilityResult from "@/components/CompatibilityResult";
 import { loveQuestions } from "@/data/questions";
 import axios from "axios";
 
-const url = "http://localhost:5000/api"
+const url = "https://project-lv-2.onrender.com/api"
 
 // const url="http://localhost:5000/api"
 
